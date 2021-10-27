@@ -3,6 +3,13 @@
  */
 package parallel.testing.kotlin.kotest.selenium
 
+import com.svetylkovo.krool.krool
+import com.svetylkovo.krool.kroolContext
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.runBlocking
+
 class App {
     val greeting: String
         get() {
@@ -10,6 +17,43 @@ class App {
         }
 }
 
+class Db {
+    init {
+        println("Connecting to database...")
+        Thread.sleep(1000)
+    }
+
+    fun getUrls(id: Int): List<String> {
+        println("Selecting URLs from database for ID $id on ${Thread.currentThread().name}")
+        Thread.sleep(2000)
+        return (1..2).map { "http://urlservice.com/id/$id/page/$it" }
+    }
+
+    fun close() {
+        println("Closing Db connection")
+    }
+}
+
 fun main() {
     println(App().greeting)
+
+    runBlocking {
+        val dbPool = krool(5) { Db() }
+
+        try {
+            val ids = (1..10)
+            val urls = ids.map { id ->
+                async(Dispatchers.IO) {
+                    dbPool.use { db -> db.getUrls(id) }
+                }
+            }.awaitAll().flatten()
+
+            println("Fetched URLs:")
+            println(urls.joinToString("\n"))
+        } finally {
+            dbPool.closeWith { it.close() }
+        }
+
+        kroolContext.close()
+    }
 }
