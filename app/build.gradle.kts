@@ -27,6 +27,8 @@ dependencies {
 
     implementation("com.svetylkovo:krool:0.1.0")
 
+    implementation("org.seleniumhq.selenium:selenium-java:4.0.0")
+
     // Use the Kotlin test library.
     testImplementation("org.jetbrains.kotlin:kotlin-test")
 

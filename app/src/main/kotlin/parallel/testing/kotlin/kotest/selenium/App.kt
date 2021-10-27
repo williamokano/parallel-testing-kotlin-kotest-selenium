@@ -56,4 +56,7 @@ fun main() {
 
         kroolContext.close()
     }
+
+    // Selenium automation
+
 }
