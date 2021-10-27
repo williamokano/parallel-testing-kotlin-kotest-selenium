@@ -26,9 +26,15 @@ dependencies {
 
     // Use the Kotlin JUnit integration.
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
+
+    testImplementation("io.kotest:kotest-runner-junit5:4.6.3")
 }
 
 application {
     // Define the main class for the application.
     mainClass.set("parallel.testing.kotlin.kotest.selenium.AppKt")
+}
+
+tasks.withType<Test> {
+    useJUnitPlatform()
 }
