@@ -8,7 +8,10 @@ import com.svetylkovo.krool.kroolContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
+import org.openqa.selenium.By
+import org.openqa.selenium.chrome.ChromeDriver
 
 class App {
     val greeting: String
@@ -38,22 +41,27 @@ fun main() {
     println(App().greeting)
 
     runBlocking {
-        val dbPool = krool(5) { Db() }
+        val webDriverPool = krool(5) { ChromeDriver() }
 
         try {
-            val ids = (1..10)
-            val urls = ids.map { id ->
+            (400..450).map { id ->
                 async(Dispatchers.IO) {
-                    dbPool.use { db -> db.getUrls(id) }
-                }
-            }.awaitAll().flatten()
+                    webDriverPool.use { webDriver ->
+                        println("Driver running for instance: $id")
+                        webDriver.get("http://www.jornalsmantiqueira.com.br/jornal/noticias-descricao.php?id_noticia=$id")
 
-            println("Fetched URLs:")
-            println(urls.joinToString("\n"))
+                        val title = webDriver.findElement(By.xpath("/html/body/div[3]/div[2]/div/span/strong"))
+                        println("$id: ${title.text}")
+                        delay(10000)
+                    }
+                }
+            }.awaitAll()
+
         } finally {
-            dbPool.closeWith { it.close() }
+            webDriverPool.closeWith { it.quit() }
         }
 
         kroolContext.close()
     }
+
 }
