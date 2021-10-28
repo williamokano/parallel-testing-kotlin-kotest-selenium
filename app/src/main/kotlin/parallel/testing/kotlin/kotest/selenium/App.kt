@@ -8,10 +8,10 @@ import com.svetylkovo.krool.kroolContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.openqa.selenium.By
 import org.openqa.selenium.chrome.ChromeDriver
+import java.util.concurrent.atomic.AtomicInteger
 
 class App {
     val greeting: String
@@ -41,10 +41,10 @@ fun main() {
     println(App().greeting)
 
     runBlocking {
-        val webDriverPool = krool(5) { ChromeDriver() }
-
+        val webDriverPool = krool(20) { ChromeDriver() }
+        val counter = AtomicInteger(0)
         try {
-            (400..450).map { id ->
+            (400..600).map { id ->
                 async(Dispatchers.IO) {
                     webDriverPool.use { webDriver ->
                         println("Driver running for instance: $id")
@@ -52,16 +52,16 @@ fun main() {
 
                         val title = webDriver.findElement(By.xpath("/html/body/div[3]/div[2]/div/span/strong"))
                         println("$id: ${title.text}")
-                        delay(10000)
+                        counter.incrementAndGet()
                     }
                 }
             }.awaitAll()
 
         } finally {
+            println("How many actually executed? ${counter.get()}")
             webDriverPool.closeWith { it.quit() }
         }
 
         kroolContext.close()
     }
-
 }
