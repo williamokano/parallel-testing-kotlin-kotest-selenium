@@ -29,6 +29,8 @@ dependencies {
 
     implementation("org.seleniumhq.selenium:selenium-java:4.0.0")
 
+    implementation("org.seleniumhq.selenium:selenium-chrome-driver:4.0.0")
+
     // Use the Kotlin test library.
     testImplementation("org.jetbrains.kotlin:kotlin-test")
 
